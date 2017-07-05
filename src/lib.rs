@@ -48,6 +48,7 @@ pub use style::StyleVar;
 pub use trees::{CollapsingHeader, TreeNode};
 pub use window::Window;
 
+mod child_frame;
 mod input;
 mod menus;
 mod plothistogram;

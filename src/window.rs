@@ -1,6 +1,7 @@
 use imgui_sys;
 use std::marker::PhantomData;
 use std::ptr;
+use child_frame::ChildFrame;
 
 use super::{ImGuiSetCond, ImGuiWindowFlags, ImGuiWindowFlags_AlwaysAutoResize,
             ImGuiWindowFlags_AlwaysHorizontalScrollbar, ImGuiWindowFlags_AlwaysUseWindowPadding,
@@ -157,6 +158,9 @@ impl<'ui, 'p> Window<'ui, 'p> {
         self.flags
             .set(ImGuiWindowFlags_AlwaysUseWindowPadding, value);
         self
+    }
+    pub fn with_child(&self, size: ImVec2) -> ChildFrame<'p> {
+        ChildFrame::new(self.name, size)
     }
     pub fn build<F: FnOnce()>(self, f: F) {
         let render = unsafe {
