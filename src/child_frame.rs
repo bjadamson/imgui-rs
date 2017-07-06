@@ -1,42 +1,31 @@
 
 use std::mem::transmute;
 
-use imgui_sys;
-use ImStr;
 use ImVec2;
 use ImGuiWindowFlags;
 
-use super::{
-    ImGuiWindowFlags_NoTitleBar,
-    ImGuiWindowFlags_NoResize,
-    ImGuiWindowFlags_NoMove,
-    ImGuiWindowFlags_NoScrollbar,
-    ImGuiWindowFlags_NoScrollWithMouse,
-    ImGuiWindowFlags_NoCollapse,
-    ImGuiWindowFlags_AlwaysAutoResize,
-    ImGuiWindowFlags_ShowBorders,
-    ImGuiWindowFlags_NoSavedSettings,
-    ImGuiWindowFlags_NoInputs,
-    ImGuiWindowFlags_MenuBar,
-    ImGuiWindowFlags_HorizontalScrollbar,
-    ImGuiWindowFlags_NoFocusOnAppearing,
-    ImGuiWindowFlags_NoBringToFrontOnFocus,
-    ImGuiWindowFlags_AlwaysVerticalScrollbar,
-    ImGuiWindowFlags_AlwaysHorizontalScrollbar,
-    ImGuiWindowFlags_AlwaysUseWindowPadding
-};
+use super::{ImGuiWindowFlags_NoTitleBar, ImGuiWindowFlags_NoResize, ImGuiWindowFlags_NoMove,
+            ImGuiWindowFlags_NoScrollbar, ImGuiWindowFlags_NoScrollWithMouse,
+            ImGuiWindowFlags_NoCollapse, ImGuiWindowFlags_AlwaysAutoResize,
+            ImGuiWindowFlags_ShowBorders, ImGuiWindowFlags_NoSavedSettings,
+            ImGuiWindowFlags_NoInputs, ImGuiWindowFlags_MenuBar,
+            ImGuiWindowFlags_HorizontalScrollbar, ImGuiWindowFlags_NoFocusOnAppearing,
+            ImGuiWindowFlags_NoBringToFrontOnFocus, ImGuiWindowFlags_AlwaysVerticalScrollbar,
+            ImGuiWindowFlags_AlwaysHorizontalScrollbar, ImGuiWindowFlags_AlwaysUseWindowPadding};
 
 #[must_use]
-pub struct ChildFrame<'p> {
-    name: &'p ImStr,
-    size: ImVec2,
-    flags: ImGuiWindowFlags
+pub struct ChildFrame {
+    pub size: ImVec2,
+    pub flags: ImGuiWindowFlags,
 }
 
-impl<'p> ChildFrame<'p> {
-    pub fn new(name: &'p ImStr, size: ImVec2) -> ChildFrame<'p> {
-        let empty_flag: ImGuiWindowFlags = unsafe {transmute::<i32, ImGuiWindowFlags>(0) };
-        ChildFrame { name: name, size: size, flags: empty_flag }
+impl ChildFrame {
+    pub fn new(size: ImVec2) -> ChildFrame {
+        let empty_flag: ImGuiWindowFlags = unsafe { transmute::<i32, ImGuiWindowFlags>(0) };
+        ChildFrame {
+            size: size,
+            flags: empty_flag,
+        }
     }
     #[inline]
     pub fn show_title(mut self, value: bool) -> Self {
@@ -74,7 +63,7 @@ impl<'p> ChildFrame<'p> {
         self
     }
     #[inline]
-    pub fn show_border(mut self, value: bool) -> Self {
+    pub fn show_borders(mut self, value: bool) -> Self {
         self.flags.set(ImGuiWindowFlags_ShowBorders, value);
         self
     }
@@ -105,31 +94,34 @@ impl<'p> ChildFrame<'p> {
     }
     #[inline]
     pub fn bring_to_front_on_focus(mut self, value: bool) -> Self {
-        self.flags.set(ImGuiWindowFlags_NoBringToFrontOnFocus, !value);
+        self.flags.set(
+            ImGuiWindowFlags_NoBringToFrontOnFocus,
+            !value,
+        );
         self
     }
     #[inline]
     pub fn always_show_vertical_scroll_bar(mut self, value: bool) -> Self {
-        self.flags.set(ImGuiWindowFlags_AlwaysVerticalScrollbar, value);
+        self.flags.set(
+            ImGuiWindowFlags_AlwaysVerticalScrollbar,
+            value,
+        );
         self
     }
     #[inline]
     pub fn always_show_horizontal_scroll_bar(mut self, value: bool) -> Self {
-        self.flags.set(ImGuiWindowFlags_AlwaysHorizontalScrollbar, value);
+        self.flags.set(
+            ImGuiWindowFlags_AlwaysHorizontalScrollbar,
+            value,
+        );
         self
     }
     #[inline]
     pub fn always_use_window_padding(mut self, value: bool) -> Self {
-        self.flags.set(ImGuiWindowFlags_AlwaysUseWindowPadding, value);
+        self.flags.set(
+            ImGuiWindowFlags_AlwaysUseWindowPadding,
+            value,
+        );
         self
-    }
-
-    pub fn build<F: FnOnce()>(self, f: F) {
-        unsafe {
-            let show_border = self.flags.contains(ImGuiWindowFlags_ShowBorders);
-            imgui_sys::igBeginChild(self.name.as_ptr(), self.size, show_border, self.flags);
-        }
-        f();
-        unsafe { imgui_sys::igEndChild(); }
     }
 }

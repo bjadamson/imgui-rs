@@ -159,9 +159,6 @@ impl<'ui, 'p> Window<'ui, 'p> {
             .set(ImGuiWindowFlags_AlwaysUseWindowPadding, value);
         self
     }
-    pub fn with_child(&self, size: ImVec2) -> ChildFrame<'p> {
-        ChildFrame::new(self.name, size)
-    }
     pub fn build<F: FnOnce()>(self, f: F) {
         let render = unsafe {
             if !self.pos_cond.is_empty() {
@@ -180,6 +177,36 @@ impl<'ui, 'p> Window<'ui, 'p> {
         };
         if render {
             f();
+        }
+        unsafe { imgui_sys::igEnd() };
+    }
+    pub fn build_with_child_frame<CF: FnOnce(), WF: FnOnce()>(self, child_frame: ChildFrame, cf: CF, wf: WF) {
+        let render = unsafe {
+            if !self.pos_cond.is_empty() {
+                imgui_sys::igSetNextWindowPos(self.pos.into(), self.pos_cond);
+            }
+            if !self.size_cond.is_empty() {
+                imgui_sys::igSetNextWindowSize(self.size.into(), self.size_cond);
+            }
+            imgui_sys::igBegin2(
+                self.name.as_ptr(),
+                self.opened.map(|x| x as *mut bool).unwrap_or(
+                    ptr::null_mut(),
+                ),
+                ImVec2::new(0.0, 0.0),
+                self.bg_alpha,
+                self.flags,
+            )
+        };
+
+        let show_border = child_frame.flags.contains(ImGuiWindowFlags_ShowBorders);
+        unsafe { imgui_sys::igBeginChild(self.name.as_ptr(), child_frame.size, show_border, child_frame.flags); }
+        if render {
+            cf();
+        }
+        unsafe { imgui_sys::igEndChild() };
+        if render {
+            wf();
         }
         unsafe { imgui_sys::igEnd() };
     }
