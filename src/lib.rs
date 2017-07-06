@@ -35,6 +35,7 @@ pub use imgui_sys::{ImDrawIdx, ImDrawVert, ImGuiInputTextFlags, ImGuiInputTextFl
                     ImGuiWindowFlags_NoSavedSettings, ImGuiWindowFlags_NoScrollWithMouse,
                     ImGuiWindowFlags_NoScrollbar, ImGuiWindowFlags_NoTitleBar,
                     ImGuiWindowFlags_ShowBorders, ImVec2, ImVec4};
+pub use child_frame::ChildFrame;
 pub use input::{ColorEdit3, ColorEdit4, InputFloat, InputFloat2, InputFloat3, InputFloat4,
                 InputInt, InputInt2, InputInt3, InputInt4, InputText};
 pub use menus::{Menu, MenuItem};
@@ -48,6 +49,7 @@ pub use style::StyleVar;
 pub use trees::{CollapsingHeader, TreeNode};
 pub use window::Window;
 
+mod child_frame;
 mod input;
 mod menus;
 mod plothistogram;
@@ -778,6 +780,7 @@ impl<'ui> Ui<'ui> {
 
     /// Runs a function after temporarily pushing a value to the style stack.
     ///
+    /// Creates a child frame. Size is size of child_frame within parent window.
     /// # Example
     /// ```rust,no_run
     /// # use imgui::*;
@@ -819,4 +822,19 @@ impl<'ui> Ui<'ui> {
         f();
         unsafe { imgui_sys::igPopStyleVar(style_vars.len() as i32) };
     }
+    /// ui.window(im_str!("ChatWindow"))
+    /// .title_bar(true)
+    /// .scrollable(false)
+    /// .build(|| {
+    ///     ui.separator();
+    ///
+    ///     ui.child_frame(im_str!("child frame"), ImVec2::new(400.0, 100.0))
+    ///         .show_borders(true)
+    ///         .always_show_vertical_scroll_bar(true)
+    ///         .show_title(true)
+    ///         .build(|| {
+    ///             ui.text_colored((1.0, 0.0, 0.0, 1.0), im_str!("hello mate!"));
+    ///         });
+    /// });
+    pub fn child_frame<'p>(&self, name: &'p ImStr, size: ImVec2) -> ChildFrame<'p> { ChildFrame::new(name, size) }
 }
