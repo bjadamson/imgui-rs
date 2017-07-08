@@ -759,6 +759,31 @@ impl<'ui> Ui<'ui> {
 }
 
 impl<'ui> Ui<'ui> {
+    /// Creates a child frame. Size is size of child_frame within parent window.
+    ///
+    /// # Example
+    /// ```rust,no_run
+    /// # use imgui::*;
+    /// # let mut imgui = ImGui::init();
+    /// # let ui = imgui.frame((0, 0), (0, 0), 0.1);
+    /// ui.window(im_str!("ChatWindow"))
+    /// .title_bar(true)
+    /// .scrollable(false)
+    /// .build(|| {
+    ///     ui.separator();
+    ///
+    ///     ui.child_frame(im_str!("child frame"), ImVec2::new(400.0, 100.0))
+    ///         .show_borders(true)
+    ///         .always_show_vertical_scroll_bar(true)
+    ///         .show_title(true)
+    ///         .build(|| {
+    ///             ui.text_colored((1.0, 0.0, 0.0, 1.0), im_str!("hello mate!"));
+    ///         });
+    /// });
+    pub fn child_frame<'p>(&self, name: &'p ImStr, size: ImVec2) -> ChildFrame<'p> { ChildFrame::new(name, size) }
+}
+
+impl<'ui> Ui<'ui> {
     fn push_style_var(&self, style_var: StyleVar) {
         use StyleVar::*;
         use imgui_sys::{igPushStyleVar, igPushStyleVarVec};
@@ -780,7 +805,6 @@ impl<'ui> Ui<'ui> {
 
     /// Runs a function after temporarily pushing a value to the style stack.
     ///
-    /// Creates a child frame. Size is size of child_frame within parent window.
     /// # Example
     /// ```rust,no_run
     /// # use imgui::*;
@@ -822,19 +846,43 @@ impl<'ui> Ui<'ui> {
         f();
         unsafe { imgui_sys::igPopStyleVar(style_vars.len() as i32) };
     }
-    /// ui.window(im_str!("ChatWindow"))
-    /// .title_bar(true)
-    /// .scrollable(false)
-    /// .build(|| {
-    ///     ui.separator();
+}
+
+impl<'ui> Ui<'ui> {
+    /// Runs a function after temporarily pushing a value to the color stack.
     ///
-    ///     ui.child_frame(im_str!("child frame"), ImVec2::new(400.0, 100.0))
-    ///         .show_borders(true)
-    ///         .always_show_vertical_scroll_bar(true)
-    ///         .show_title(true)
-    ///         .build(|| {
-    ///             ui.text_colored((1.0, 0.0, 0.0, 1.0), im_str!("hello mate!"));
-    ///         });
+    /// # Example
+    /// ```rust,no_run
+    /// # use imgui::*;
+    /// # let mut imgui = ImGui::init();
+    /// # let ui = imgui.frame((0, 0), (0, 0), 0.1);
+    /// ui.with_color_var(ImGuiCol::Text, ImVec4::from((1.0, 0.0, 0.0, 1.0)), || {
+    ///     ui.text_wrapped(im_str!("AB"));
     /// });
-    pub fn child_frame<'p>(&self, name: &'p ImStr, size: ImVec2) -> ChildFrame<'p> { ChildFrame::new(name, size) }
+    /// ```
+    pub fn with_color_var<F: FnOnce()>(&self, var: ImGuiCol, color: ImVec4, f: F) {
+        unsafe { imgui_sys::igPushStyleColor(var, color); }
+        f();
+        unsafe {imgui_sys::igPopStyleColor(1); }
+    }
+
+    /// Runs a function after temporarily pushing an array of values to the color stack.
+    ///
+    /// # Example
+    /// ```rust,no_run
+    /// # use imgui::*;
+    /// # let mut imgui = ImGui::init();
+    /// # let ui = imgui.frame((0, 0), (0, 0), 0.1);
+    /// # let vars = [ImGuiCol::Text, ImGuiCol::TextDisabled];
+    /// ui.with_color_vars(&vars, ImVec4::from((1.0, 0.0, 0.0, 1.0)), || {
+    ///     ui.text_wrapped(im_str!("AB"));
+    /// });
+    /// ```
+    pub fn with_color_vars<F: FnOnce()>(&self, color_vars: &[ImGuiCol], color: ImVec4, f: F) {
+        for &color_var in color_vars {
+            unsafe { imgui_sys::igPushStyleColor(color_var, color); }
+        }
+        f();
+        unsafe { imgui_sys::igPopStyleColor(color_vars.len() as i32) };
+    }
 }
